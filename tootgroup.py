@@ -153,77 +153,76 @@ def main():
     # run through the notifications and look for retoot candidates
     for notification in my_notifications:
 
+        if not hasattr(notification, 'status'):
+            continue
+
         # Only from group members
-        if notification.status.account.id in my_account["group_member_ids"]:
+        if notification.status.account.id not in my_account["group_member_ids"]:
+            continue
 
-            # Is retooting of public mentions configured?
-            if accept_retoots:
-                if notification.type == "mention" and notification.status.visibility == "public" and notification.status.in_reply_to_id == None:
-                    # Only if the mention was preceeded by an "!".
-                    # To check this, html tags have to be removed first.
-                    repost_trigger = "@" + my_account["username"]
-                    status = re.sub("<.*?>", "", notification.status.content)
-                    if repost_trigger in status:
-                        if not my_commandline_arguments["dry_run"]:
-                            masto.status_reblog(notification.status.id)
-                            print("Retooted from notification ID: " + str(notification.id))
-                        else:
-                            print("DRY RUN - would have retooted from notification ID: "
-                                  + str(notification.id))
+        # Is retooting of public mentions configured?
+        if accept_retoots:
+            if notification.type == "mention" and notification.status.visibility == "public" and notification.status.in_reply_to_id == None:
+                if not my_commandline_arguments["dry_run"]:
+                    masto.status_reblog(notification.status.id)
+                    print("Retooted from notification ID: " + str(notification.id))
+                else:
+                    print("DRY RUN - would have retooted from notification ID: "
+                          + str(notification.id))
 
-            # Is reposting of direct messages configured? - if yes then:
-            # Look for direct messages
-            if accept_DMs:
-                if notification.type == "mention" and notification.status.visibility == "direct":
-                    # Remove HTML tags from the status content but keep linebreaks
-                    new_status = re.sub("<br />", "\n", notification.status.content)
-                    new_status = re.sub("</p><p>", "\n\n", new_status)
-                    new_status = re.sub("<.*?>", "", new_status)
-                    # Get the group account's @username
-                    account_username = "@" + my_account["username"]
+        # Is reposting of direct messages configured? - if yes then:
+        # Look for direct messages
+        if accept_DMs:
+            if notification.type == "mention" and notification.status.visibility == "direct":
+                # Remove HTML tags from the status content but keep linebreaks
+                new_status = re.sub("<br />", "\n", notification.status.content)
+                new_status = re.sub("</p><p>", "\n\n", new_status)
+                new_status = re.sub("<.*?>", "", new_status)
+                # Get the group account's @username
+                account_username = "@" + my_account["username"]
 
-                    # Only continue if the DM starts with the group account's @username
-                    if new_status.startswith(account_username):
-                        # Remove the group account's @username from the text
-                        new_status = re.sub(account_username, "", new_status)
-                        # "un-escape" HTML special characters
-                        new_status = html.unescape(new_status)
-                        if not my_commandline_arguments["dry_run"]:
-                            # Repost as a new status
-                            masto.status_post(
-                                new_status,
-                                media_ids = media_toot_again(notification.status.media_attachments,
-                                    masto),
-                                sensitive = notification.status.sensitive,
-                                visibility = "public",
-                                spoiler_text = notification.status.spoiler_text
-                            )
-                            print("Newly posted from DM with notification ID: " + str(notification.id))
-                        else:
-                            print("DRY RUN - would have newly posted from DM with notification ID: "
-                                + str(notification.id))
-
-                    # If the DM does not start with the group account's @username it will not
-                    # trigger a new toot. Notify the originating user why this happened instead!
+                # Only continue if the DM starts with the group account's @username
+                if new_status.startswith(account_username):
+                    # Remove the group account's @username from the text
+                    new_status = re.sub(account_username, "", new_status)
+                    # "un-escape" HTML special characters
+                    new_status = html.unescape(new_status)
+                    if not my_commandline_arguments["dry_run"]:
+                        # Repost as a new status
+                        masto.status_post(
+                            new_status,
+                            media_ids = media_toot_again(notification.status.media_attachments,
+                                masto),
+                            sensitive = notification.status.sensitive,
+                            visibility = "public",
+                            spoiler_text = notification.status.spoiler_text
+                        )
+                        print("Newly posted from DM with notification ID: " + str(notification.id))
                     else:
-                        if not my_commandline_arguments["dry_run"]:
-                            new_status = ("@" + notification.account.acct + "\n"
-                            "Ohai! - This is a notification from your friendly tootgroup.py bot.\n\n"
-                            "Your message has not been converted to a new group toot because it did "
-                            "not start with @" + my_account["username"] + "\n\n"
-                            "Remember to put @" + my_account["username"] + " at the very beginning if "
-                            "you want to create a new group toot.")
-                            masto.status_post(
-                                new_status,
-                                in_reply_to_id=notification.status.id,
-                                visibility="direct",
-                            )
-                            print("Not posted from DM with notification ID: " + str(notification.id), end="")
-                            print(". It did not start with @" + my_account["username"] + "!")
-                        else:
-                            print("DRY RUN - received DM with notification ID: "
-                                  + str(notification.id) +
-                                  ", but it did not begin with @" + my_account["username"] + "!")
+                        print("DRY RUN - would have newly posted from DM with notification ID: "
+                            + str(notification.id))
+
+                # If the DM does not start with the group account's @username it will not
+                # trigger a new toot. Notify the originating user why this happened instead!
+                else:
+                    if not my_commandline_arguments["dry_run"]:
+                        new_status = ("@" + notification.account.acct + "\n"
+                        "Ohai! - This is a notification from your friendly tootgroup.py bot.\n\n"
+                        "Your message has not been converted to a new group toot because it did "
+                        "not start with @" + my_account["username"] + "\n\n"
+                        "Remember to put @" + my_account["username"] + " at the very beginning if "
+                        "you want to create a new group toot.")
+                        masto.status_post(
+                            new_status,
+                            in_reply_to_id=notification.status.id,
+                            visibility="direct",
+                        )
+                        print("Not posted from DM with notification ID: " + str(notification.id), end="")
+                        print(". It did not start with @" + my_account["username"] + "!")
+                    else:
+                        print("DRY RUN - received DM with notification ID: "
+                              + str(notification.id) +
+                              ", but it did not begin with @" + my_account["username"] + "!")
 
     # There have been changes requiring to persist the new configuration
     # but not in a dry-run condition
