@@ -17,8 +17,8 @@ notifications from the Mastodon account it is connected to and filters them for
 messages to repost. There are two methods of creating a group post. One or both
 of them can be enabled during the setup procedure.
 
-1. Public mentions of group members are boosted if they preceed the group's
-   name with an Exclamation Mark like "!@mastodon"
+1. Public mentions of group members are boosted if they mention the group's
+   name in the first post.
 
 2. `tootgroup.py` can also look for direct messages from group members. If the
    group is @mentioned at the very beginning, The message will be reposted as
@@ -33,13 +33,12 @@ anything.
 But how to simply use it?
 -------------------------
 
-1. Write a message that should be boosted by the group: Just include
-   "!@group_name" anywhere in the toot.
-   EXAMPLE: "OHAI! just found that !@mastodon thingie!"
+1. Write a message that should be boosted by the group:
+   EXAMPLE: "OHAI! just found that @mastodon thingie!"
 
 2. Write a message that should appear as a new post from the group:
-   Put "!@group_name" at the very beginning of a direct/private message.
-   EXAMPLE: "!@mastodon HERE BE THE MESSAGE TEXT"
+   Put "@group_name" at the very beginning of a direct/private message.
+   EXAMPLE: "@mastodon HERE BE THE MESSAGE TEXT"
 
 How to set up?
 --------------
@@ -82,7 +81,7 @@ if difficulties should appear.
    `tootgroup.py` using this name. If you don't specify any group name, the
    handle "default" is created and used automatically
 
-5. Test the funcionality by sending direct messages and "!@mentions" to your
+5. Test the funcionality by sending direct messages and "@mentions" to your
    group while running `tootgroup.py` manually. See if things work as expected.
    The script will print an according message after each successful run.
    If everything works, run the script periodically via cron and enjoy
