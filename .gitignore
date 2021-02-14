@@ -1,0 +1,6 @@
+venv
+fedigroup.py.egg-info/
+dist/
+build/
+fedigroups.ini
+*.save

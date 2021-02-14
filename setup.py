@@ -4,16 +4,16 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="tootgroup.py",
-    version="1.1.0",
-    author="Andreas Schreiner",
-    author_email="andreas.schreiner@sonnenmulde.at",
-    description="Emulate group accounts on Mastodon",
+    name="fedigroup.py",
+    version="1.0.0",
+    author="Dmytro Poltavchenko",
+    author_email="dmytro.poltavchenko@gmail.com",
+    description="Emulate group accounts on Mastodon/Pleroma",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/oe4dns/tootgroup.py",
+    url="https://github.com/uanet-exception/fedigroup.py",
     packages=setuptools.find_packages(),
-    keywords="mastodon toot group fediverse",
+    keywords="mastodon pleroma toot group fediverse",
     classifiers=[
         "Environment :: Console",
         "Development Status :: 5 - Production/Stable",
@@ -23,7 +23,6 @@ setuptools.setup(
     ],
     install_requires=[
         "Mastodon.py",
-        "appdirs",
     ],
-    scripts=["tootgroup.py"],
+    scripts=["fedigroup.py"],
 )
