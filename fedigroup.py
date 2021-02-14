@@ -45,7 +45,6 @@ class FediGroupBot:
                     pass
 
         while True:
-            print(last_seen_id)
             for notification in sorted(self.masto.notifications(since_id=last_seen_id), key=lambda x: x.id):  # NOQA: E501
                 if notification.id > last_seen_id:
                     last_seen_id = notification.id
