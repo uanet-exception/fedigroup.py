@@ -14,6 +14,7 @@ setuptools.setup(
     url="https://github.com/uanet-exception/fedigroup.py",
     packages=setuptools.find_packages(),
     keywords="mastodon pleroma toot group fediverse",
+    python_requires='>=3',
     classifiers=[
         "Environment :: Console",
         "Development Status :: 5 - Production/Stable",
