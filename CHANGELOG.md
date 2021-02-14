@@ -1,4 +1,9 @@
 February 14 2020:
+Version fedigroup.py 1.0.1 released.
+  * removed debug messages
+  * prevent pip from installing the project on Python 2
+
+February 14 2020:
 Version fedigroup.py 1.0.0 released.
   * tootgroup.py has been fully refactored and renamed to fedigroup.py
   * added git-like parsing commands.
