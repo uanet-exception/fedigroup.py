@@ -30,7 +30,7 @@ of them can be enabled during the setup procedure.
 But how to simply use it?
 -------------------------
 
-1. Subscribe to group account andwWrite a message that should be boosted by the group:
+1. Subscribe to group account and write a message that should be boosted by the group:
    EXAMPLE: "OHAI! just found that @mastodon thingie!"
 
 2. Make sure if group account is following you and write a message that should appear as a new post from the group:
