@@ -28,13 +28,8 @@ class FediGroupBot:
 
         self.id = self.masto.account_verify_credentials().id
         self.username = self.masto.account_verify_credentials().username
-
-    def fetch_group_members(self):
-        followers = self.masto.account_followers(self.id, limit=sys.maxsize)
-        self.group_members = [member.acct for member in followers]
-
-        following = self.masto.account_following(self.id, limit=sys.maxsize)
-        self.group_admins = [member.acct for member in following]
+        self.group_members = []
+        self.group_admins = []
 
     def run(self):
         last_seen_id = 0
@@ -50,7 +45,7 @@ class FediGroupBot:
 
             # Refresh group members list, but only if we got new notifications
             if notifications:
-                self.fetch_group_members()
+                self._fetch_group_members_and_admins()
 
             for notification in sorted(notifications, key=lambda x: x.id):
                 if notification.id > last_seen_id:
@@ -60,6 +55,13 @@ class FediGroupBot:
                         fd.write(str(last_seen_id))
 
             time.sleep(2)
+
+    def _fetch_group_members_and_admins(self):
+        followers = self.masto.account_followers(self.id, limit=sys.maxsize)
+        self.group_members = [member.acct for member in followers]
+
+        following = self.masto.account_following(self.id, limit=sys.maxsize)
+        self.group_admins = [member.acct for member in following]
 
     def _do_action(self, notification):
         if notification.type != "mention":
