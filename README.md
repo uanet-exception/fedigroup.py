@@ -63,7 +63,7 @@ if difficulties should appear.
 3. `fedigroup.py` will ask you for all needed setup data and try to get them
    right by connecting to the Mastodon server. If it cannot do so, it will
    tell you and you can retry. When successful, `fedigroup.py` will write the
-   configuration to its fedigroup.ini file and read it from there next time
+   configuration to its fedigroups.ini file and read it from there next time
    you run the script.
 
    The place for storing configuration by default is next to `fedigroup.py` and
