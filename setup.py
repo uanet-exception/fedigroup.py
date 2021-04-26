@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="fedigroup.py",
-    version="1.0.2",
+    version="1.0.3",
     author="Dmytro Poltavchenko",
     author_email="dmytro.poltavchenko@gmail.com",
     description="Emulate group accounts on Mastodon/Pleroma",
