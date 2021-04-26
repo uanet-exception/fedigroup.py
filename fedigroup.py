@@ -29,10 +29,10 @@ class FediGroupBot:
         self.id = self.masto.account_verify_credentials().id
         self.username = self.masto.account_verify_credentials().username
 
-        followers = self.masto.account_followers(self.id)
+        followers = self.masto.account_followers(self.id, limit=sys.maxsize)
         self.group_members = [member.acct for member in followers]
 
-        following = self.masto.account_following(self.id)
+        following = self.masto.account_following(self.id, limit=sys.maxsize)
         self.group_admins = [member.acct for member in following]
 
     def run(self):
