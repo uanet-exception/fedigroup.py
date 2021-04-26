@@ -29,6 +29,7 @@ class FediGroupBot:
         self.id = self.masto.account_verify_credentials().id
         self.username = self.masto.account_verify_credentials().username
 
+    def fetch_group_members(self):
         followers = self.masto.account_followers(self.id, limit=sys.maxsize)
         self.group_members = [member.acct for member in followers]
 
@@ -45,7 +46,13 @@ class FediGroupBot:
                     pass
 
         while True:
-            for notification in sorted(self.masto.notifications(since_id=last_seen_id), key=lambda x: x.id):  # NOQA: E501
+            notifications = self.masto.notifications(since_id=last_seen_id)
+
+            # Refresh group members list, but only if we got new notifications
+            if notifications:
+                self.fetch_group_members()
+
+            for notification in sorted(notifications, key=lambda x: x.id):
                 if notification.id > last_seen_id:
                     last_seen_id = notification.id
                     self._do_action(notification)
