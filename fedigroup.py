@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import argparse
-import configparser
-import getpass
 import html
 import mastodon
 import os
@@ -11,6 +9,10 @@ import requests
 import sys
 import signal
 import time
+
+from getpass import getpass
+from os.path import abspath
+from configparser import ConfigParser
 
 
 class FediGroupBot:
@@ -43,27 +45,26 @@ class FediGroupBot:
         while True:
             notifications = self.masto.notifications(since_id=last_seen_id)
 
-            # Refresh group members list, but only if we got new notifications
             if notifications:
-                self._fetch_group_members_and_admins()
+                self.__refetch_group_members()
 
             for notification in sorted(notifications, key=lambda x: x.id):
                 if notification.id > last_seen_id:
                     last_seen_id = notification.id
-                    self._do_action(notification)
+                    self.__do_action(notification)
                     with open(self.save_file, 'w') as fd:
                         fd.write(str(last_seen_id))
 
             time.sleep(2)
 
-    def _fetch_group_members_and_admins(self):
+    def __refetch_group_members(self):
         followers = self.masto.account_followers(self.id, limit=sys.maxsize)
         self.group_members = [member.acct for member in followers]
 
         following = self.masto.account_following(self.id, limit=sys.maxsize)
         self.group_admins = [member.acct for member in following]
 
-    def _do_action(self, notification):
+    def __do_action(self, notification):
         if notification.type != "mention":
             return
 
@@ -107,7 +108,7 @@ class MainApp:
                 os.path.join(__file__, os.pardir, 'fedigroups.ini')))
         parser = argparse.ArgumentParser(
             description='FediGroupBot Manager',
-            usage=f'{__file__} <command> [<args>]\n\n'
+            usage=f'{abspath(__file__)} <command> [<args>]\n\n'
                   'The most commonly used commands are:\n'
                   '   create     Create a new bot\n'
                   '   remove     Remove selected bot from config file\n'
@@ -118,7 +119,7 @@ class MainApp:
         args = parser.parse_args(sys.argv[1:2])
         if not hasattr(self, args.command):
             parser.print_help()
-            print(f'{__file__}: error: Unrecognized command: {args.command}')
+            print(f'{abspath(__file__)}: error: Unrecognized command: {args.command}')  # NOQA: E501
             exit(1)
 
         getattr(self, args.command)()
@@ -133,7 +134,7 @@ class MainApp:
                     return 'no'
         parser = argparse.ArgumentParser(
             description='Create a new bot',
-            usage=f'{__file__} create <name> [<args>]')
+            usage=f'{abspath(__file__)} create <name> [<args>]')
         parser.add_argument('name')
         parser.add_argument(
             '-c', '--config', help='config file', required=False,
@@ -143,18 +144,18 @@ class MainApp:
         args = parser.parse_args(sys.argv[2:])
 
         if os.path.exists(args.config):
-            config = configparser.ConfigParser()
+            config = ConfigParser()
             config.read(args.config)
             if config.has_section(args.name):
                 parser.print_help()
-                print(f'{__file__}: error: Configuration group for "{args.name}" is already exist')  # NOQA: E501
+                print(f'{abspath(__file__)}: error: Configuration group for "{args.name}" is already exist')  # NOQA: E501
                 exit(1)
 
         print(f'New configuration will be stored in "{args.config}" file')
 
         base_url = input('Enter the URL of the Mastodon instance: ')
         email = input('Username (e-Mail) to log into Mastodon Instance: ')
-        password = getpass.getpass('Password: ')
+        password = getpass('Password: ')
 
         accept_dms = yes_or_no('Should we repost direct messages?')
         accept_retoots = yes_or_no('Should we retoot public mentions from group members?')  # NOQA: E501
@@ -179,7 +180,7 @@ class MainApp:
             api_base_url=base_url
         ).log_in(email, password)
 
-        config = configparser.ConfigParser()
+        config = ConfigParser()
         config.read(args.config)
         config.add_section(args.name)
         config.set(args.name, 'base_url', base_url)
@@ -190,12 +191,12 @@ class MainApp:
         with open(args.config, 'w') as fd:
             config.write(fd)
 
-        print(f"Now you start your bot using command: {__file__} run {args.name}")  # NOQA: E501
+        print(f"Now you start your bot using command: {abspath(__file__)} run {args.name}")  # NOQA: E501
 
     def remove(self):
         parser = argparse.ArgumentParser(
             description='Remove selected bot',
-            usage=f'{__file__} remove <name> [<args>]')
+            usage=f'{abspath(__file__)} remove <name> [<args>]')
         parser.add_argument('name')
         parser.add_argument(
             '-c', '--config', help='config file', required=False,
@@ -203,7 +204,7 @@ class MainApp:
             default=self.default_config)
 
         args = parser.parse_args(sys.argv[2:])
-        config = configparser.ConfigParser()
+        config = ConfigParser()
         config.read(args.config)
         config.remove_section(args.name)
         with open(args.config, 'w') as fd:
@@ -217,14 +218,14 @@ class MainApp:
                 return x
         parser = argparse.ArgumentParser(
             description='List all bots',
-            usage=f"{__file__} list [<args>]")
+            usage=f"{abspath(__file__)} list [<args>]")
         parser.add_argument(
             '-c', '--config', help='config file', required=False,
             type=extant_file, metavar="fedigroups.ini",
             default=self.default_config)
 
         args = parser.parse_args(sys.argv[2:])
-        config = configparser.ConfigParser()
+        config = ConfigParser()
         config.read(args.config)
         if len(config.sections()) == 0:
             print(f'No configurations were found')
@@ -240,7 +241,7 @@ class MainApp:
                 return x
         parser = argparse.ArgumentParser(
             description='Run selected bot',
-            usage=f"{__file__} run <name> [<args>]")
+            usage=f"{abspath(__file__)} run <name> [<args>]")
         parser.add_argument('name')
         parser.add_argument(
             '-c', '--config', help='config file', required=False,
@@ -250,7 +251,7 @@ class MainApp:
         args = parser.parse_args(sys.argv[2:])
         print(f'Starting "{args.name}" bot...')
 
-        config = configparser.ConfigParser()
+        config = ConfigParser()
         config.read(args.config)
         base_url = config.get(args.name, 'base_url')
         access_token = config.get(args.name, 'access_token')
