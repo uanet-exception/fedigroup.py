@@ -46,7 +46,7 @@ class FediGroupBot:
             notifications = self.masto.notifications(since_id=last_seen_id)
 
             if notifications:
-                self.__refetch_group_members()
+                self.__update_group_members()
 
             for notification in sorted(notifications, key=lambda x: x.id):
                 if notification.id > last_seen_id:
@@ -57,7 +57,7 @@ class FediGroupBot:
 
             time.sleep(2)
 
-    def __refetch_group_members(self):
+    def __update_group_members(self):
         followers = self.masto.account_followers(self.id, limit=sys.maxsize)
         self.group_members = [member.acct for member in followers]
 
